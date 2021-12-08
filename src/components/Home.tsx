@@ -37,7 +37,7 @@ const Home = () => {
   const [loggedIn, setLoggedIn] = useState(false)
   const [onlineUsers, setOnlineUsers] = useState<IUser[]>([])
   const [chatHistory, setChatHistory] = useState<IMessage[]>([])
-  const navigate = useNavigate()
+  const id = useParams
 
   // every time this component renders, a connection gets established to the server
   // thanks to the io invocation at line 6
@@ -47,6 +47,12 @@ const Home = () => {
 
   // how can we listen for an event coming from the server?
   // setting up a TRAP! (an event listener)
+  useEffect(()=>{
+    socket.on("private message",(newMessage : IMessage)=>{
+      setChatHistory((chatHistory) => [...chatHistory, newMessage])
+    })
+    fetchOnlineUsers()
+  },[])
 
   useEffect(() => {
     // here we're setting up the traps, just once, because once set up they'll continue
@@ -124,7 +130,8 @@ const Home = () => {
       timestamp: Date.now(), // <-- ms expired 01/01/1970
     }
 
-    socket.emit('sendmessage', { message: newMessage, room: room })
+    // socket.emit('sendmessage', { message: newMessage, room: room })
+    socket.emit('private message', { message: newMessage, room: id })
     // this is sending my message to the server. I'm not receiving back my own message,
     // so I need to append it manually to my chat history.
     // but all the other connected clients are going to receive it back from the server!
@@ -205,7 +212,7 @@ const Home = () => {
           <ListGroup>
             {onlineUsers.length === 0 && <ListGroupItem>No users yet!</ListGroupItem>}
             {onlineUsers.filter(user => user.room === room).map((user) => (
-            <Link to={`/${user.id}`}> <ListGroupItem key={user.id} >{user.username}</ListGroupItem> </Link> 
+            <Link to={`/user/${user.id}`}> <ListGroupItem key={user.id} >{user.username}</ListGroupItem> </Link> 
             ))}
           </ListGroup>
         </Col>
