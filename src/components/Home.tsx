@@ -4,6 +4,12 @@ import { io } from 'socket.io-client'
 import { IUser } from '../interfaces/IUser'
 import IMessage from '../interfaces/IMessage'
 import { Room } from '../interfaces/Room'
+import { Link } from 'react-router-dom'
+
+import { useNavigate, useParams } from 'react-router-dom'
+
+
+
 
 const ADDRESS = 'http://localhost:3030' // <-- address of the BACKEND PROCESS
 const socket = io(ADDRESS, { transports: ['websocket'] })
@@ -31,6 +37,7 @@ const Home = () => {
   const [loggedIn, setLoggedIn] = useState(false)
   const [onlineUsers, setOnlineUsers] = useState<IUser[]>([])
   const [chatHistory, setChatHistory] = useState<IMessage[]>([])
+  const navigate = useNavigate()
 
   // every time this component renders, a connection gets established to the server
   // thanks to the io invocation at line 6
@@ -92,6 +99,8 @@ const Home = () => {
       //   setChatHistory([...chatHistory, newMessage]) // <-- kinda buggy, because the value of
       // chatHistory is always going to be an empty array (that's the evaluated value when
       // the useEffect hook executes)
+
+     
       setChatHistory((chatHistory) => [...chatHistory, newMessage])
     })
   }, [])
@@ -111,7 +120,7 @@ const Home = () => {
     const newMessage: IMessage = {
       text: message,
       sender: username,
-      socketId: socket.id,
+     id: socket.id,
       timestamp: Date.now(), // <-- ms expired 01/01/1970
     }
 
@@ -123,6 +132,9 @@ const Home = () => {
     // and that event is called 'message'...
     // let's set up a trap (event listener) for catching all the 'message' events
     // that all the other clients are going to receive!
+
+    
+   
     setChatHistory([...chatHistory, newMessage])
     setMessage('')
   }
@@ -193,7 +205,7 @@ const Home = () => {
           <ListGroup>
             {onlineUsers.length === 0 && <ListGroupItem>No users yet!</ListGroupItem>}
             {onlineUsers.filter(user => user.room === room).map((user) => (
-              <ListGroupItem key={user.id}>{user.username}</ListGroupItem>
+            <Link to={`/${user.id}`}> <ListGroupItem key={user.id} >{user.username}</ListGroupItem> </Link> 
             ))}
           </ListGroup>
         </Col>
